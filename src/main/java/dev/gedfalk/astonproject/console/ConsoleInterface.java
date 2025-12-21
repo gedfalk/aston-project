@@ -1,6 +1,8 @@
 package dev.gedfalk.astonproject.console;
 
 import dev.gedfalk.astonproject.entity.User;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 
 import java.time.LocalDateTime;
 import java.util.Scanner;
@@ -60,9 +62,17 @@ public class ConsoleInterface {
                 .name("Eugene")
                 .email("bla-bla@bla.com")
                 .age(30)
-                .created_at(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .build();
 
-        System.out.println(user);
+        try {
+            SessionFactory sessionFactory = new Configuration()
+                    .configure("hibernate.cfg.xml")
+                    .buildSessionFactory();
+        } catch (Exception e) {
+            System.out.println("noooooooooo");
+        }
+
+
     }
 }

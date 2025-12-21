@@ -9,5 +9,7 @@
 
         <property name="hibernate.hbm2ddl.auto">update</property>
         <property name="hibernate.show_sql">true</property>
+
+        <mapping class="dev.gedfalk.astonproject.entity.User"/>
     </session-factory>
 </hibernate-configuration>
