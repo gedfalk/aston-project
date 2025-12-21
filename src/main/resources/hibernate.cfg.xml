@@ -8,7 +8,8 @@
         <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</property>
 
         <property name="hibernate.hbm2ddl.auto">update</property>
-        <property name="hibernate.show_sql">true</property>
+<!--        <property name="hibernate.show_sql">true</property>-->
+        <property name="hibernate.show_sql">false</property>
 
         <mapping class="dev.gedfalk.astonproject.entity.User"/>
     </session-factory>

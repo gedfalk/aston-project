@@ -4,15 +4,16 @@ import dev.gedfalk.astonproject.dao.UserDAO;
 import dev.gedfalk.astonproject.dao.UserDAOHibernate;
 import dev.gedfalk.astonproject.entity.User;
 import dev.gedfalk.astonproject.utils.HibernateUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
-import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 
+@Slf4j
 public class ConsoleInterface {
     private final Scanner scanner;
     private final UserDAO userDAO;
@@ -58,24 +59,24 @@ public class ConsoleInterface {
                     listAll();
                     break;
                 case "6":
-                    System.out.println("Завершение программы...");
+                    log.info("Завершение программы...");
                     HibernateUtil.disconnect();
                     return;
                 default:
-                    System.out.println("Некорректный ввод.\nВведите цифру от 1 до 6");
+                    log.warn("Некорректный ввод.\nВведите цифру от 1 до 6");
             }
         }
     }
 
     private Optional<User> validateInputUser(String input) {
         if (input.isEmpty()) {
-            System.out.println("___Строка не может быть пустой!___");
+            log.warn("___Строка не может быть пустой!___");
             return Optional.empty();
         }
 
         String[] chunks = input.split(";");
         if (chunks.length != 3) {
-            System.out.println("___Неверный формат данных!___");
+            log.warn("___Неверный формат данных!___");
             return Optional.empty();
         }
 
@@ -85,7 +86,7 @@ public class ConsoleInterface {
         try {
             age = Integer.parseInt(chunks[2].trim());
         } catch (NumberFormatException e) {
-            System.out.println("___age должно быть числом!___");
+            log.warn("___age должно быть числом!___");
             return Optional.empty();
         }
 
@@ -97,7 +98,7 @@ public class ConsoleInterface {
                 .build();
 
         if (userDAO.existByEmail(email)) {
-            System.out.println("___User с таким мылом уже существует___");
+            log.warn("___User с таким почтовым ящиком уже существует___");
             return Optional.empty();
         }
 
@@ -105,7 +106,7 @@ public class ConsoleInterface {
     }
 
     public void createUser() {
-        System.out.println("Введите User в формате 'name;email;age':");
+        log.info("Введите User в формате 'name;email;age':");
 
         String input = scanner.nextLine().trim();
         Optional<User> userOpt = validateInputUser(input);
@@ -117,9 +118,9 @@ public class ConsoleInterface {
         User user = userOpt.get();
         try {
             userDAO.save(user);
-            System.out.println("___User создан успешно___");
+            log.info("___User создан успешно___");
         } catch (Exception e) {
-            System.out.println("___ERRR___не удалось создать User___");
+            log.warn("___Не удалось создать User___");
         }
     }
 
@@ -132,10 +133,10 @@ public class ConsoleInterface {
 
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
-                System.out.println("\nНайден пользователь:");
-                System.out.println(user);
+                log.info("\nНайден пользователь:");
+                log.info("{}", user);
             } else {
-                System.out.println("___Пользователь не найден___");
+                log.warn("___Пользователь не найден___");
             }
         }
     }
@@ -150,9 +151,9 @@ public class ConsoleInterface {
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
                 userDAO.delete(id);
-                System.out.println("\nПользователь с данным id удалён из базы");
+                log.info("\nПользователь с данным id удалён из базы");
             } else {
-                System.out.println("___Пользователь не найден___");
+                log.info("___Пользователь не найден___");
             }
         }
     }
@@ -166,7 +167,7 @@ public class ConsoleInterface {
 
             if (oldUserOpt.isPresent()) {
                 User oldUser = oldUserOpt.get();
-                System.out.println("Введите Нового User в формате 'name;email;age':");
+                log.info("Введите Нового User в формате 'name;email;age':");
 
                 String input = scanner.nextLine().trim();
                 Optional<User> modifiedUserOpt = validateInputUser(input);
@@ -178,23 +179,23 @@ public class ConsoleInterface {
                 User modifiedUser = modifiedUserOpt.get();
                 try {
                     userDAO.update(id, modifiedUser);
-                    System.out.println("___User успешно обновлён___");
+                    log.info("___User успешно обновлён___");
                 } catch (Exception e) {
-                    System.out.println("___ERRRRR___не удалось обновить User___" + e.getMessage());
+                    log.error("___не удалось обновить User___", e);
                 }
 
             } else {
-                System.out.println("___Пользователь не найден___");
+                log.warn("___Пользователь не найден___");
             }
         }
     }
 
     private Optional<Integer> chooseId() {
-        System.out.println("\nВведите Id:");
+        log.info("\nВведите Id:");
 
         String input = scanner.nextLine().trim();
         if (input.isEmpty()) {
-            System.out.println("___Нужно было ввести число!___");
+            log.info("___Нужно было ввести число!___");
             return Optional.empty();
         }
 
@@ -203,27 +204,27 @@ public class ConsoleInterface {
             id = Integer.parseInt(input);
             return Optional.of(id);
         } catch (NumberFormatException e) {
-            System.out.println("___id должно быть числом!___");
+            log.error("___id должно быть числом!___", e);
             return Optional.empty();
         }
     }
 
     public void listAll() {
-        System.out.println("\n___База данных___");
+        log.info("\n___База данных___");
         try {
             List<User> users = userDAO.findAll();
 
             if (users.isEmpty()) {
-                System.out.println("___(таблица пуста)___");
+                log.info("___(таблица пуста)___");
                 return;
             }
 
             for (User user : users) {
-                System.out.println(user);
+                log.info("{}", user);
             }
 
         } catch (Exception e) {
-            System.out.println("___Ошибка чтения___");
+            log.error("___Ошибка чтения___", e);
         }
     }
 }

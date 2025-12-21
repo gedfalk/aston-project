@@ -1,9 +1,11 @@
 package dev.gedfalk.astonproject.utils;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
+@Slf4j
 public class HibernateUtil {
     @Getter
     private static final SessionFactory sessionFactory = buildSessionFactory();
@@ -14,8 +16,7 @@ public class HibernateUtil {
                     .configure("hibernate.cfg.xml")
                     .buildSessionFactory();
         } catch (Exception e) {
-            // TODO: заменить на логгер
-            System.out.println("_____errrrrr______");
+            log.error("Ошибка инициализации", e);
             throw new ExceptionInInitializerError(e);
         }
     }
