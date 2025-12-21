@@ -29,4 +29,15 @@ public class User {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Override
+    public String toString() {
+        return String.format("%d | %s | %s | %d | %tF %tT",
+                id,
+                name,
+                email,
+                age,
+                createdAt,
+                createdAt);
+    }
 }

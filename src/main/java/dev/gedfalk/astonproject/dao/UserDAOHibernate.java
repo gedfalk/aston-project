@@ -7,6 +7,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public class UserDAOHibernate implements UserDAO {
     @Override
@@ -34,6 +35,14 @@ public class UserDAOHibernate implements UserDAO {
                     "SELECT COUNT(*) FROM User WHERE email = :email", Long.class);
             query.setParameter("email", email);
             return query.getSingleResult() > 0;
+        }
+    }
+
+    @Override
+    public Optional<User> findById(Integer id) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            User user = session.get(User.class, id);
+            return Optional.ofNullable(user);
         }
     }
 

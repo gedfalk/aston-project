@@ -10,7 +10,7 @@ public interface UserDAO {
     User save(User user);
 
     // Read
-//    Optional<User> findById(Integer id);
+    Optional<User> findById(Integer id);
 
     // Update
 //    User update(User user);

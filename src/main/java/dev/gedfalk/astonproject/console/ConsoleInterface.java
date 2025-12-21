@@ -7,8 +7,10 @@ import dev.gedfalk.astonproject.utils.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
+import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class ConsoleInterface {
@@ -44,7 +46,7 @@ public class ConsoleInterface {
                     createUser();
                     break;
                 case "2":
-                    // TODO: readUser
+                    findById();
                     break;
                 case "3":
                     // TODO: updateUser
@@ -110,6 +112,42 @@ public class ConsoleInterface {
         }
     }
 
+    public void findById() {
+        Optional<Integer> idOpt = chooseId();
+
+        if (idOpt.isPresent()) {
+            Integer id = idOpt.get();
+            Optional<User> userOpt = userDAO.findById(id);
+
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                System.out.println("\nНайден пользователь:");
+                System.out.println(user);
+            } else {
+                System.out.println("___Пользователь не найден___");
+            }
+        }
+    }
+
+    private Optional<Integer> chooseId() {
+        System.out.println("\nВведите Id:");
+
+        String input = scanner.nextLine().trim();
+        if (input.isEmpty()) {
+            System.out.println("___Нужно было ввести число!___");
+            return Optional.empty();
+        }
+
+        Integer id;
+        try {
+            id = Integer.parseInt(input);
+            return Optional.of(id);
+        } catch (NumberFormatException e) {
+            System.out.println("___id должно быть числом!___");
+            return Optional.empty();
+        }
+    }
+
     public void listAll() {
         System.out.println("___База данных___");
         try {
@@ -121,13 +159,7 @@ public class ConsoleInterface {
             }
 
             for (User user : users) {
-                System.out.printf("%d | %s | %s | %d | %tF %tT\n",
-                        user.getId(),
-                        user.getName(),
-                        user.getEmail(),
-                        user.getAge(),
-                        user.getCreatedAt(),
-                        user.getCreatedAt());
+                System.out.println(user);
             }
 
         } catch (Exception e) {
