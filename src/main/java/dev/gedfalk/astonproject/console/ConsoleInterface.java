@@ -8,6 +8,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Scanner;
 
 public class ConsoleInterface {
@@ -52,7 +53,7 @@ public class ConsoleInterface {
                     // TODO: deleteUser
                     break;
                 case "5":
-                    // TODO: вывести всех
+                    listAll();
                     break;
                 case "6":
                     System.out.println("Завершение программы...");
@@ -106,6 +107,31 @@ public class ConsoleInterface {
             System.out.println("___User создан успешно___");
         } catch (Exception e) {
             System.out.println("___ERRR___не удалось создать User___");
+        }
+    }
+
+    public void listAll() {
+        System.out.println("___База данных___");
+        try {
+            List<User> users = userDAO.findAll();
+
+            if (users.isEmpty()) {
+                System.out.println("___(таблица пуста)___");
+                return;
+            }
+
+            for (User user : users) {
+                System.out.printf("%d | %s | %s | %d | %tF %tT\n",
+                        user.getId(),
+                        user.getName(),
+                        user.getEmail(),
+                        user.getAge(),
+                        user.getCreatedAt(),
+                        user.getCreatedAt());
+            }
+
+        } catch (Exception e) {
+            System.out.println("___Ошибка чтения___");
         }
     }
 }

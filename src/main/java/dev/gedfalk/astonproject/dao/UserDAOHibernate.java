@@ -6,6 +6,8 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
+import java.util.List;
+
 public class UserDAOHibernate implements UserDAO {
     @Override
     public User save(User user) {
@@ -32,6 +34,15 @@ public class UserDAOHibernate implements UserDAO {
                     "SELECT COUNT(*) FROM User WHERE email = :email", Long.class);
             query.setParameter("email", email);
             return query.getSingleResult() > 0;
+        }
+    }
+
+    @Override
+    public List<User> findAll() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<User> query = session.createQuery(
+                    "FROM User", User.class);
+            return query.list();
         }
     }
 }
