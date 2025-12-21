@@ -49,7 +49,7 @@ public class ConsoleInterface {
                     findById();
                     break;
                 case "3":
-                    // TODO: updateUser
+                    updateUser();
                     break;
                 case "4":
                     deleteById();
@@ -67,19 +67,16 @@ public class ConsoleInterface {
         }
     }
 
-    public void createUser() {
-        System.out.println("Введите User в формате 'name;email;age':");
-
-        String input = scanner.nextLine().trim();
+    private Optional<User> validateInputUser(String input) {
         if (input.isEmpty()) {
             System.out.println("___Строка не может быть пустой!___");
-            return;
+            return Optional.empty();
         }
 
         String[] chunks = input.split(";");
         if (chunks.length != 3) {
             System.out.println("___Неверный формат данных!___");
-            return;
+            return Optional.empty();
         }
 
         String name = chunks[0].trim();
@@ -89,7 +86,7 @@ public class ConsoleInterface {
             age = Integer.parseInt(chunks[2].trim());
         } catch (NumberFormatException e) {
             System.out.println("___age должно быть числом!___");
-            return;
+            return Optional.empty();
         }
 
         User user = User.builder()
@@ -101,9 +98,23 @@ public class ConsoleInterface {
 
         if (userDAO.existByEmail(email)) {
             System.out.println("___User с таким мылом уже существует___");
+            return Optional.empty();
+        }
+
+        return Optional.of(user);
+    }
+
+    public void createUser() {
+        System.out.println("Введите User в формате 'name;email;age':");
+
+        String input = scanner.nextLine().trim();
+        Optional<User> userOpt = validateInputUser(input);
+
+        if (userOpt.isEmpty()) {
             return;
         }
 
+        User user = userOpt.get();
         try {
             userDAO.save(user);
             System.out.println("___User создан успешно___");
@@ -146,6 +157,38 @@ public class ConsoleInterface {
         }
     }
 
+    public void updateUser() {
+        Optional<Integer> idOpt = chooseId();
+
+        if (idOpt.isPresent()) {
+            Integer id = idOpt.get();
+            Optional<User> oldUserOpt = userDAO.findById(id);
+
+            if (oldUserOpt.isPresent()) {
+                User oldUser = oldUserOpt.get();
+                System.out.println("Введите Нового User в формате 'name;email;age':");
+
+                String input = scanner.nextLine().trim();
+                Optional<User> modifiedUserOpt = validateInputUser(input);
+
+                if (modifiedUserOpt.isEmpty()) {
+                    return;
+                }
+
+                User modifiedUser = modifiedUserOpt.get();
+                try {
+                    userDAO.update(id, modifiedUser);
+                    System.out.println("___User успешно обновлён___");
+                } catch (Exception e) {
+                    System.out.println("___ERRRRR___не удалось обновить User___" + e.getMessage());
+                }
+
+            } else {
+                System.out.println("___Пользователь не найден___");
+            }
+        }
+    }
+
     private Optional<Integer> chooseId() {
         System.out.println("\nВведите Id:");
 
@@ -166,7 +209,7 @@ public class ConsoleInterface {
     }
 
     public void listAll() {
-        System.out.println("___База данных___");
+        System.out.println("\n___База данных___");
         try {
             List<User> users = userDAO.findAll();
 

@@ -76,4 +76,27 @@ public class UserDAOHibernate implements UserDAO {
             throw new RuntimeException("Не удалось удалить User");
         }
     }
+
+    @Override
+    public User update(Integer id, User newUser) {
+        Transaction transaction = null;
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+
+            User oldUser = session.get(User.class, id);
+            oldUser.setName(newUser.getName());
+            oldUser.setEmail(newUser.getEmail());
+            oldUser.setAge(newUser.getAge());
+
+            transaction.commit();
+            return oldUser;
+
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw new RuntimeException("Не удалось обновить User");
+        }
+    }
 }

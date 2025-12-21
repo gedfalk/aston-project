@@ -13,7 +13,7 @@ public interface UserDAO {
     Optional<User> findById(Integer id);
 
     // Update
-//    User update(User user);
+    User update(Integer id, User user);
 
     // Delete
     void delete(Integer id);
