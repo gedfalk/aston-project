@@ -1,6 +1,8 @@
 package dev.gedfalk.astonproject.console;
 
 import dev.gedfalk.astonproject.entity.User;
+import dev.gedfalk.astonproject.utils.HibernateUtil;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
@@ -65,14 +67,20 @@ public class ConsoleInterface {
                 .createdAt(LocalDateTime.now())
                 .build();
 
+        SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+        Session session = sessionFactory.openSession();
+
         try {
-            SessionFactory sessionFactory = new Configuration()
-                    .configure("hibernate.cfg.xml")
-                    .buildSessionFactory();
+            session.beginTransaction();
+            session.persist(user);
+            session.getTransaction().commit();
         } catch (Exception e) {
-            System.out.println("noooooooooo");
+            // TODO: заменить на логи
+            System.out.println("Ошибка во время записи транзакции");
+        } finally {
+            session.close();
         }
 
-
+        HibernateUtil.disconnect();
     }
 }
