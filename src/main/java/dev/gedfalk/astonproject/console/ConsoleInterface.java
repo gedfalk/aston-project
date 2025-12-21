@@ -1,19 +1,22 @@
 package dev.gedfalk.astonproject.console;
 
+import dev.gedfalk.astonproject.dao.UserDAO;
+import dev.gedfalk.astonproject.dao.UserDAOHibernate;
 import dev.gedfalk.astonproject.entity.User;
 import dev.gedfalk.astonproject.utils.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
 
 import java.time.LocalDateTime;
 import java.util.Scanner;
 
 public class ConsoleInterface {
     private final Scanner scanner;
+    private final UserDAO userDAO;
 
     public ConsoleInterface() {
         this.scanner = new Scanner(System.in);
+        this.userDAO = new UserDAOHibernate();
     }
 
     public void printMenu() {
@@ -28,13 +31,15 @@ public class ConsoleInterface {
     }
 
     public void run() {
+        SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+        Session session = sessionFactory.openSession();
+
         while (true) {
             printMenu();
             String choice = scanner.nextLine();
 
             switch (choice) {
                 case "1":
-                    // TODO: временная заглушка. Удалить!!!
                     createUser();
                     break;
                 case "2":
@@ -51,6 +56,7 @@ public class ConsoleInterface {
                     break;
                 case "6":
                     System.out.println("Завершение программы...");
+                    HibernateUtil.disconnect();
                     return;
                 default:
                     System.out.println("Некорректный ввод.\nВведите цифру от 1 до 6");
@@ -58,29 +64,48 @@ public class ConsoleInterface {
         }
     }
 
-    // TODO: временная заглушка. Удалить!!!
     public void createUser() {
+        System.out.println("Введите User в формате 'name;email;age':");
+
+        String input = scanner.nextLine().trim();
+        if (input.isEmpty()) {
+            System.out.println("___Строка не может быть пустой!___");
+            return;
+        }
+
+        String[] chunks = input.split(";");
+        if (chunks.length != 3) {
+            System.out.println("___Неверный формат данных!___");
+            return;
+        }
+
+        String name = chunks[0].trim();
+        String email = chunks[1].trim();
+        Integer age;
+        try {
+            age = Integer.parseInt(chunks[2].trim());
+        } catch (NumberFormatException e) {
+            System.out.println("___age должно быть числом!___");
+            return;
+        }
+
         User user = User.builder()
-                .name("Eugene")
-                .email("bla-bla@bla.com")
-                .age(30)
+                .name(name)
+                .email(email)
+                .age(age)
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
-        Session session = sessionFactory.openSession();
-
-        try {
-            session.beginTransaction();
-            session.persist(user);
-            session.getTransaction().commit();
-        } catch (Exception e) {
-            // TODO: заменить на логи
-            System.out.println("Ошибка во время записи транзакции");
-        } finally {
-            session.close();
+        if (userDAO.existByEmail(email)) {
+            System.out.println("___User с таким мылом уже существует___");
+            return;
         }
 
-        HibernateUtil.disconnect();
+        try {
+            userDAO.save(user);
+            System.out.println("___User создан успешно___");
+        } catch (Exception e) {
+            System.out.println("___ERRR___не удалось создать User___");
+        }
     }
 }
