@@ -52,7 +52,7 @@ public class ConsoleInterface {
                     // TODO: updateUser
                     break;
                 case "4":
-                    // TODO: deleteUser
+                    deleteById();
                     break;
                 case "5":
                     listAll();
@@ -123,6 +123,23 @@ public class ConsoleInterface {
                 User user = userOpt.get();
                 System.out.println("\nНайден пользователь:");
                 System.out.println(user);
+            } else {
+                System.out.println("___Пользователь не найден___");
+            }
+        }
+    }
+
+    public void deleteById() {
+        Optional<Integer> idOpt = chooseId();
+
+        if (idOpt.isPresent()) {
+            Integer id = idOpt.get();
+            Optional<User> userOpt = userDAO.findById(id);
+
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                userDAO.delete(id);
+                System.out.println("\nПользователь с данным id удалён из базы");
             } else {
                 System.out.println("___Пользователь не найден___");
             }
