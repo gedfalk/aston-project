@@ -3,6 +3,7 @@ package dev.gedfalk.astonproject.console;
 import dev.gedfalk.astonproject.dao.UserDAO;
 import dev.gedfalk.astonproject.dao.UserDAOHibernate;
 import dev.gedfalk.astonproject.entity.User;
+import dev.gedfalk.astonproject.service.UserService;
 import dev.gedfalk.astonproject.utils.HibernateUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
@@ -17,11 +18,16 @@ import java.util.Scanner;
 public class ConsoleInterface {
     private final Scanner scanner;
     private final UserDAO userDAO;
+    private final UserService userService;
 
     public ConsoleInterface() {
         this.scanner = new Scanner(System.in);
         this.userDAO = new UserDAOHibernate();
+        this.userService = new UserService(userDAO);
     }
+
+    // Объект для валидации-хранения input-строки типа 'name;email;age'
+    public record UserData(String name, String email, Integer age) {}
 
     public void printMenu() {
         System.out.println();
@@ -68,7 +74,7 @@ public class ConsoleInterface {
         }
     }
 
-    private Optional<User> validateInputUser(String input) {
+    private Optional<UserData> validatedUserInput(String input) {
         if (input.isEmpty()) {
             log.warn("___Строка не может быть пустой!___");
             return Optional.empty();
@@ -90,40 +96,34 @@ public class ConsoleInterface {
             return Optional.empty();
         }
 
-        User user = User.builder()
-                .name(name)
-                .email(email)
-                .age(age)
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        if (userDAO.existByEmail(email)) {
-            log.warn("___User с таким почтовым ящиком уже существует___");
-            return Optional.empty();
-        }
-
-        return Optional.of(user);
+        return Optional.of(new UserData(name, email, age));
     }
 
     public void createUser() {
         log.info("Введите User в формате 'name;email;age':");
 
         String input = scanner.nextLine().trim();
-        Optional<User> userOpt = validateInputUser(input);
+        Optional<UserData> userOpt = validatedUserInput(input);
 
-        if (userOpt.isEmpty()) {
+        if (userOpt.isPresent()) {
+            UserData userData = userOpt.get();
+            String name = userData.name();
+            String email = userData.email();
+            Integer age = userData.age();
+
+            try {
+                User user = userService.createUser(name, email, age);
+                log.info("___User создан успешно___");
+            } catch (Exception e) {
+                log.warn("___Не удалось создать User___\n{}", e.getMessage());
+            }
+
+        } else {
             return;
-        }
-
-        User user = userOpt.get();
-        try {
-            userDAO.save(user);
-            log.info("___User создан успешно___");
-        } catch (Exception e) {
-            log.warn("___Не удалось создать User___");
         }
     }
 
+    // TODO: ?? заменить userDAO на service-слой ??
     public void findById() {
         Optional<Integer> idOpt = chooseId();
 
@@ -141,6 +141,7 @@ public class ConsoleInterface {
         }
     }
 
+    // TODO: ?? заменить userDAO на service-слой ??
     public void deleteById() {
         Optional<Integer> idOpt = chooseId();
 
@@ -163,29 +164,26 @@ public class ConsoleInterface {
 
         if (idOpt.isPresent()) {
             Integer id = idOpt.get();
-            Optional<User> oldUserOpt = userDAO.findById(id);
+            User oldUser = userService.findById(id);
 
-            if (oldUserOpt.isPresent()) {
-                User oldUser = oldUserOpt.get();
-                log.info("Введите Нового User в формате 'name;email;age':");
+            log.info("Введите Нового User в формате 'name;email;age':");
+            String input = scanner.nextLine().trim();
+            Optional<UserData> modifiedUserOpt = validatedUserInput(input);
 
-                String input = scanner.nextLine().trim();
-                Optional<User> modifiedUserOpt = validateInputUser(input);
+            if (modifiedUserOpt.isPresent()) {
+                UserData userData = modifiedUserOpt.get();
+                String name = userData.name();
+                String email = userData.email();
+                Integer age = userData.age();
 
-                if (modifiedUserOpt.isEmpty()) {
-                    return;
-                }
-
-                User modifiedUser = modifiedUserOpt.get();
                 try {
-                    userDAO.update(id, modifiedUser);
+                    userService.updateUser(id, name, email, age);
                     log.info("___User успешно обновлён___");
                 } catch (Exception e) {
                     log.error("___не удалось обновить User___", e);
                 }
-
             } else {
-                log.warn("___Пользователь не найден___");
+                return;
             }
         }
     }
@@ -209,6 +207,7 @@ public class ConsoleInterface {
         }
     }
 
+    // TODO: ?? заменить userDAO на service-слой ??
     public void listAll() {
         log.info("\n___База данных___");
         try {

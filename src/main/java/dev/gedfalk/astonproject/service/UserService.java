@@ -31,7 +31,7 @@ public class UserService {
         }
         String verifiedEmail = email.trim();
         if (!verifiedEmail.contains("@") || !verifiedEmail.contains(".")) {
-            throw new IllegalArgumentException("Некорректный формат");
+            throw new IllegalArgumentException("Некорректный формат мыла");
         }
         if (verifiedEmail.length() > 50) {
             throw new IllegalArgumentException("Cлиииишком длинное мыло");
@@ -67,5 +67,27 @@ public class UserService {
                 .build();
 
         return userDao.save(user);
+    }
+
+    public User updateUser(Integer id, String name, String email, Integer age) {
+        validateName(name);
+        validateEmail(email);
+        validateAge(age);
+
+        findById(id);
+
+        User user = User.builder()
+                .name(name.trim())
+                .email(email.trim().toLowerCase())
+                .age(age)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        return userDao.update(id, user);
+    }
+
+    public User findById(Integer id) {
+        return userDao.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь с ID " + id + " не найден"));
     }
 }
