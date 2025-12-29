@@ -56,7 +56,7 @@ public class UserService {
         validateAge(age);
 
         if (userDao.existByEmail(email.trim().toLowerCase())) {
-            throw new IllegalArgumentException("Пользователь с мылом " + email + " уже есть");
+            throw new IllegalArgumentException("Пользователь с мылом " + email.trim().toLowerCase() + " уже есть");
         }
 
         User user = User.builder()
