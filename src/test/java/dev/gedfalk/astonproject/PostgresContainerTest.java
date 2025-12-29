@@ -7,8 +7,7 @@ public class PostgresContainerTest {
 
     @Test
     void testPostgresContainer() {
-        try (PostgreSQLContainer
-                     postgres = new PostgreSQLContainer<>("postgres:15")) {
+        try (PostgreSQLContainer postgres = new PostgreSQLContainer<>("postgres:15")) {
             // Запускаем контейнер
             postgres.start();
 
