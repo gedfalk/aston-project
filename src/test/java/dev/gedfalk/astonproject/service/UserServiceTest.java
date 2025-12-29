@@ -9,6 +9,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -62,5 +64,39 @@ public class UserServiceTest {
         assertEquals("Пользователь с мылом test@gmail.com уже есть", exception.getMessage());
 
         verify(userDao, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Поиск по id - успешный кейс")
+    void findById_success() {
+
+        Integer id = 13;
+        User existingUser = User.builder()
+                .name("Kolya")
+                .email("kolya@gmail.com")
+                .age(25)
+                .build();
+        when(userDao.findById(id)).thenReturn(Optional.of(existingUser));
+
+        User result = userService.findById(id);
+
+        assertEquals("Kolya", result.getName());
+        assertEquals("kolya@gmail.com", result.getEmail());
+        assertEquals(25, result.getAge());
+    }
+
+    @Test
+    @DisplayName("Поиск по id - негативный кейс")
+    void findById_notFound_Exception() {
+
+        Integer id = 42;
+        when(userDao.findById(id)).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> userService.findById(id)
+        );
+
+        assertEquals("Пользователь с ID 42 не найден", exception.getMessage());
     }
 }
