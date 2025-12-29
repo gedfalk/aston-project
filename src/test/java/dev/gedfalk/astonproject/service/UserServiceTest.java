@@ -2,9 +2,13 @@ package dev.gedfalk.astonproject.service;
 
 import dev.gedfalk.astonproject.dao.UserDAO;
 import dev.gedfalk.astonproject.entity.User;
+import lombok.Value;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -98,5 +102,37 @@ public class UserServiceTest {
         );
 
         assertEquals("Пользователь с ID 42 не найден", exception.getMessage());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {-100, -1, 121})
+    @DisplayName("Валидация возраста - негативные кейсы")
+    void createUser_invalidAge_Exception(int age) {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> userService.createUser("Eugene", "test@gmail.com", age)
+        );
+
+        if (age < 0) {
+            assertEquals("Возраст должен быть больше 0", exception.getMessage());
+        } else {
+            assertEquals("Возраст должен быть меньше 120", exception.getMessage());
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "' ', Имя не может быть пустым",
+            "X, Имя должно быть больше 2 символов",
+            "'Дейнерис Бурерожденная из дома Таргариенов', Слииишком длинное имя"
+    })
+    @DisplayName("Валидация имени - негативные кейсы")
+    void createUser_invalidName_Exception(String name, String message) {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> userService.createUser(name, "test@gmail.com", 30)
+        );
+
+        assertEquals(message, exception.getMessage());
     }
 }

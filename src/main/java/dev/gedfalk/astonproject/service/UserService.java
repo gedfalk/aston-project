@@ -20,7 +20,7 @@ public class UserService {
         if (verifiedName.length() < 2) {
             throw new IllegalArgumentException("Имя должно быть больше 2 символов");
         }
-        if (verifiedName.length() > 50) {
+        if (verifiedName.length() > 30) {
             throw new IllegalArgumentException("Слииишком длинное имя");
         }
     }
