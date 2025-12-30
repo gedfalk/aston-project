@@ -60,17 +60,19 @@ public class PostgresContainerTest {
         log.info("Зааааааапууууууускааааааем тест");
         try (PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:15")) {
             // Запускаем контейнер
-//            postgres.start();
+            postgres.start();
 
             // Выводим данные контейнера для проверки
-//            System.out.println("Postgres URL: " + postgres.getJdbcUrl());
-//            System.out.println("Username: " + postgres.getUsername());
-//            System.out.println("Password: " + postgres.getPassword());
+            System.out.println("Postgres URL: " + postgres.getJdbcUrl());
+            System.out.println("Username: " + postgres.getUsername());
+            System.out.println("Password: " + postgres.getPassword());
 
             log.info("_________ создали postgres успешно ______ \n{}", postgres);
             // Здесь можно подключиться к базе через JDBC и выполнить тестовые действия
-        } catch (Exception e) {
-            log.info("???????????? выкинуло во время создания postgres\n__________{}________", e.getMessage());
+//        } catch (Exception e) {
+//            log.info("???????????? выкинуло во время создания postgres\n__________{}________", e.getMessage());
+//           }
+
         }
     }
 }

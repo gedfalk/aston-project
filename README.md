@@ -15,10 +15,16 @@
 git clone https://github.com/gedfalk/aston-project.git
 cd aston-project
 
+# Linux
+sudo service docker restart
 docker-compose up -d
-
 mvn clean compile
 mvn exec:java -Dexec.mainClass="dev.gedfalk.astonproject.Main"
+
+# Windows
+docker-compose up -d
+mvn clean compile
+mvn exec:java "-Dexec.mainClass=dev.gedfalk.astonproject.Main"
 ```
 ---
 
@@ -27,11 +33,19 @@ mvn exec:java -Dexec.mainClass="dev.gedfalk.astonproject.Main"
 ```shell
 git checkout feature/tests
 
-mvn test
+# решение для Linux - при проблемах с ryuk-контейнером
+export TESTCONTAINERS_RYUK_DISABLED=true
+
+mvn clean test
 ```
 Testcontainers пока не запускаются даже в базовой конфигурации - ни на линуксе, ни на Windows. Не получается настроить доступ к Docker-окружению, система его просто не видит... разбираюсь...
 
 ---
 
 ### 🔧 Docker/Linux
-При отсутствии установленного Docker Desktop и проблеме, когда приложение на хосте (localhost) не может подключиться к localhost:5432 внутри контейнера - можно раскомментировать `network_mode: host`
+В связи с тем, что Docker на Linux не прокидывает localhost автоматически (в отличие от Windows Docker Desktop) - решить проблему запуска можно раскомментировав следующую строку в конфиге докера:
+```yaml
+### docker-compose.yml
+
+network_mode: host
+```
