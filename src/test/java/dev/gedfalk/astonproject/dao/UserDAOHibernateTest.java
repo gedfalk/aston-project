@@ -3,13 +3,12 @@ package dev.gedfalk.astonproject.dao;
 import dev.gedfalk.astonproject.AbstractPostgresContainerTest;
 import dev.gedfalk.astonproject.entity.User;
 import dev.gedfalk.astonproject.utils.HibernateUtil;
-import jakarta.persistence.PersistenceException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -76,6 +75,37 @@ public class UserDAOHibernateTest extends AbstractPostgresContainerTest {
                 RuntimeException.class,
                 () -> userDAO.update(99, newUser)
         );
+    }
+
+    @Test
+    @DisplayName("Обновление существующего юзер - позитивный кейс")
+    void update_shouldUpdateExistingUser() {
+        User user = userDAO.save(createTestUser("OldEugene", "test@gmail.com", 30));
+        User newUser = createTestUser("NewEugene", "newtest@gmail.com", 29);
+
+        User updated = userDAO.update(user.getId(), newUser);
+
+        assertEquals("NewEugene", updated.getName());
+        assertEquals("newtest@gmail.com", updated.getEmail());
+    }
+
+    @Test
+    @DisplayName("Возврат всех юзеров из таблицы - позитивный кейс")
+    void findAll_returnAllUsers() {
+        userDAO.save(createTestUser("Eugene1", "test1@gmail.com", 33));
+        userDAO.save(createTestUser("Eugene2", "test2@gmail.com", 33));
+
+        List<User> users = userDAO.findAll();
+
+        assertEquals(2, users.size());
+    }
+
+    @Test
+    @DisplayName("Поиск юзера email - негативный кейс")
+    void existByEmail_returnFalseIfDoesntExist() {
+        Boolean result = userDAO.existByEmail("someStrangeEmail@gmail.com");
+
+        assertFalse(result);
     }
 
     private User createTestUser(String name, String email, Integer age) {
