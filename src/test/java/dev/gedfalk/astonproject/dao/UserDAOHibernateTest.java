@@ -3,10 +3,11 @@ package dev.gedfalk.astonproject.dao;
 import dev.gedfalk.astonproject.AbstractPostgresContainerTest;
 import dev.gedfalk.astonproject.entity.User;
 import dev.gedfalk.astonproject.utils.HibernateUtil;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import jakarta.persistence.PersistenceException;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.exception.ConstraintViolationException;
+import org.junit.jupiter.api.*;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -20,6 +21,15 @@ public class UserDAOHibernateTest extends AbstractPostgresContainerTest {
     @BeforeEach
     void setup() {
         userDAO = new UserDAOHibernate();
+    }
+
+    @AfterEach
+    void rollback() {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        Transaction transaction = session.beginTransaction();
+        session.createQuery("DELETE FROM User").executeUpdate();
+        transaction.commit();
+        session.close();
     }
 
     @Test
@@ -55,6 +65,17 @@ public class UserDAOHibernateTest extends AbstractPostgresContainerTest {
         Optional<User> found = userDAO.findById(666);
 
         assertTrue(found.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Обновление несуществующего юзера - негативный кейс")
+    void update_exceptionBecauseUserDoesntExist() {
+        User newUser = createTestUser("Eugene's ghost", "xxx@xxx.xxx", 1);
+
+        assertThrows(
+                RuntimeException.class,
+                () -> userDAO.update(99, newUser)
+        );
     }
 
     private User createTestUser(String name, String email, Integer age) {
