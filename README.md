@@ -22,6 +22,7 @@ mvn clean compile
 mvn exec:java -Dexec.mainClass="dev.gedfalk.astonproject.Main"
 
 # Windows
+# запускаем Docker Desktop
 docker-compose up -d
 mvn clean compile
 mvn exec:java "-Dexec.mainClass=dev.gedfalk.astonproject.Main"
