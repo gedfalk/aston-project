@@ -7,8 +7,15 @@ import org.hibernate.cfg.Configuration;
 
 @Slf4j
 public class HibernateUtil {
-    @Getter
-    private static final SessionFactory sessionFactory = buildSessionFactory();
+
+    private static SessionFactory sessionFactory;
+
+    public static SessionFactory getSessionFactory() {
+        if (sessionFactory == null) {
+            sessionFactory = buildSessionFactory();
+        }
+        return sessionFactory;
+    }
 
     private static SessionFactory buildSessionFactory() {
         try {
@@ -22,6 +29,8 @@ public class HibernateUtil {
     }
 
     public static void disconnect() {
-        getSessionFactory().close();
+        if (sessionFactory != null) {
+            sessionFactory.close();
+        }
     }
 }
