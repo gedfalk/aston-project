@@ -23,6 +23,7 @@ public class UserDAOHibernate implements UserDAO {
             if (transaction != null) {
                 transaction.rollback();
             }
+            e.printStackTrace();
             throw new RuntimeException("Ошибка при попытке совершить транзакцию", e);
         }
     }

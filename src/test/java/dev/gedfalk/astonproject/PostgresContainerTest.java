@@ -36,4 +36,18 @@ public class PostgresContainerTest extends AbstractPostgresContainerTest {
             assertTrue(session.isConnected());
         }
     }
+
+    @Test
+    @DisplayName("Таблица создаётся")
+    void shouldSeeUsersTable() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Object result = session.createNativeQuery("""
+            SELECT table_name
+            FROM information_schema.tables
+            WHERE table_name = 'users'
+        """).getSingleResult();
+
+            assertNotNull(result);
+        }
+    }
 }
