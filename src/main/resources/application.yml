@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: aston-project
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/aston_project_db
+    username: postgres
+    password: postgres
+
+    # create-drop ? нужен ли теперь
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
