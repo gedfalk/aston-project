@@ -59,6 +59,12 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public void deleteUser(Integer id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("Пользователь с таким id не найден");
+        }
+        userRepository.deleteById(id);
+    }
     // update
-    // delete
 }

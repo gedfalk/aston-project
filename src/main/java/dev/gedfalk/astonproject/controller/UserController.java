@@ -33,6 +33,11 @@ public class UserController {
         return userService.getAllUsers();
     }
 
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(@PathVariable Integer id) {
+        userService.deleteUser(id);
+    }
+
     // update
-    // delete
 }
