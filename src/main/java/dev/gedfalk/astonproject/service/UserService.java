@@ -66,5 +66,22 @@ public class UserService {
         }
         userRepository.deleteById(id);
     }
-    // update
+
+    @Transactional
+    public UserResponseDto updateUser(Integer id, UserRequestDto requestDto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Пользователь с таким id не найдет"));
+
+        String newEmail = requestDto.getEmail();
+        if (!user.getEmail().equals(newEmail) && userRepository.existsByEmail(newEmail)) {
+            throw new IllegalArgumentException("Такой email уже есть");
+        }
+
+        user.setName(requestDto.getName());
+        user.setEmail(newEmail);
+        user.setAge(requestDto.getAge());
+
+        User updatedUser = userRepository.save(user);
+        return convertToDto(updatedUser);
+    }
 }
