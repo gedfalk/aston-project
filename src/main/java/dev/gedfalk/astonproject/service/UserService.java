@@ -1,5 +1,6 @@
 package dev.gedfalk.astonproject.service;
 
+import dev.gedfalk.astonproject.dto.UserRequestDto;
 import dev.gedfalk.astonproject.dto.UserResponseDto;
 import dev.gedfalk.astonproject.entity.User;
 import dev.gedfalk.astonproject.repository.UserRepository;
@@ -30,7 +31,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDto createUser(UserResponseDto requestDto) {
+    public UserResponseDto createUser(UserRequestDto requestDto) {
         if (userRepository.existsByEmail(requestDto.getEmail())) {
             throw new IllegalArgumentException("Почтвоый ящик уже существует");
         }
@@ -57,4 +58,7 @@ public class UserService {
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
+
+    // update
+    // delete
 }
