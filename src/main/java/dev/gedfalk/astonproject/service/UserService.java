@@ -1,92 +1,60 @@
 package dev.gedfalk.astonproject.service;
 
+import dev.gedfalk.astonproject.dto.UserResponseDto;
 import dev.gedfalk.astonproject.entity.User;
+import dev.gedfalk.astonproject.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
-//    private final UserDAO userDao;
-//
-//    public UserService(UserDAO userDao) {
-//        this.userDao = userDao;
-//    }
-//
-//    private void validateName(String name) {
-//        if (name == null || name.trim().isEmpty()) {
-//            throw new IllegalArgumentException("Имя не может быть пустым");
-//        }
-//        String verifiedName = name.trim();
-//        if (verifiedName.length() < 2) {
-//            throw new IllegalArgumentException("Имя должно быть больше 2 символов");
-//        }
-//        if (verifiedName.length() > 30) {
-//            throw new IllegalArgumentException("Слииишком длинное имя");
-//        }
-//    }
-//
-//    private void validateEmail(String email) {
-//        if (email == null || email.trim().isEmpty()) {
-//            throw new IllegalArgumentException("Мыло обязательно");
-//        }
-//        String verifiedEmail = email.trim();
-//        if (!verifiedEmail.contains("@") || !verifiedEmail.contains(".")) {
-//            throw new IllegalArgumentException("Некорректный формат мыла");
-//        }
-//        if (verifiedEmail.length() > 50) {
-//            throw new IllegalArgumentException("Cлиииишком длинное мыло");
-//        }
-//    }
-//
-//    private void validateAge(Integer age) {
-//        if (age == null) {
-//            throw new IllegalArgumentException("Возраст нужно указать обязательно");
-//        }
-//        if (age < 0) {
-//            throw new IllegalArgumentException("Возраст должен быть больше 0");
-//        }
-//        if (age > 120) {
-//            throw new IllegalArgumentException("Возраст должен быть меньше 120");
-//        }
-//    }
-//
-//    public User createUser(String name, String email, Integer age) {
-//        validateName(name);
-//        validateEmail(email);
-//        validateAge(age);
-//
-//        if (userDao.existByEmail(email.trim().toLowerCase())) {
-//            throw new IllegalArgumentException("Пользователь с мылом " + email.trim().toLowerCase() + " уже есть");
-//        }
-//
-//        User user = User.builder()
-//                .name(name.trim())
-//                .email(email.trim().toLowerCase())
-//                .age(age)
-//                .createdAt(LocalDateTime.now())
-//                .build();
-//
-//        return userDao.save(user);
-//    }
-//
-//    public User updateUser(Integer id, String name, String email, Integer age) {
-//        validateName(name);
-//        validateEmail(email);
-//        validateAge(age);
-//
-//        findById(id);
-//
-//        User user = User.builder()
-//                .name(name.trim())
-//                .email(email.trim().toLowerCase())
-//                .age(age)
-//                .createdAt(LocalDateTime.now())
-//                .build();
-//
-//        return userDao.update(id, user);
-//    }
-//
-//    public User findById(Integer id) {
-//        return userDao.findById(id)
-//                .orElseThrow(() -> new IllegalArgumentException("Пользователь с ID " + id + " не найден"));
-//    }
+
+    private final UserRepository userRepository;
+
+    // преобразуем Entity в Dto
+    private UserResponseDto convertToDto(User user) {
+        return UserResponseDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .age(user.getAge())
+                .createdAt(user.getCreatedAt())
+                .build();
+    }
+
+    @Transactional
+    public UserResponseDto createUser(UserResponseDto requestDto) {
+        if (userRepository.existsByEmail(requestDto.getEmail())) {
+            throw new IllegalArgumentException("Почтвоый ящик уже существует");
+        }
+
+        User user = User.builder()
+                .name(requestDto.getName())
+                .email(requestDto.getEmail())
+                .age(requestDto.getAge())
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        User savedUser = userRepository.save(user);
+        return convertToDto(savedUser);
+    }
+
+    public UserResponseDto getUserById(Integer id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Пользователь с таким id не найден"));
+        return convertToDto(user);
+    }
+
+    public List<UserResponseDto> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
 }
