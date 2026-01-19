@@ -32,9 +32,6 @@ public class UserService {
 
     @Transactional
     public UserResponseDto createUser(UserRequestDto requestDto) {
-        if (userRepository.existsByEmail(requestDto.getEmail())) {
-            throw new IllegalArgumentException("Почтвоый ящик уже существует");
-        }
 
         User user = User.builder()
                 .name(requestDto.getName())
@@ -61,9 +58,9 @@ public class UserService {
 
     @Transactional
     public void deleteUser(Integer id) {
-        if (!userRepository.existsById(id)) {
-            throw new RuntimeException("Пользователь с таким id не найден");
-        }
+//        if (!userRepository.existsById(id)) {
+//            throw new RuntimeException("Пользователь с таким id не найден");
+//        }
         userRepository.deleteById(id);
     }
 
@@ -73,9 +70,9 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Пользователь с таким id не найдет"));
 
         String newEmail = requestDto.getEmail();
-        if (!user.getEmail().equals(newEmail) && userRepository.existsByEmail(newEmail)) {
-            throw new IllegalArgumentException("Такой email уже есть");
-        }
+//        if (!user.getEmail().equals(newEmail) && userRepository.existsByEmail(newEmail)) {
+//            throw new IllegalArgumentException("Такой email уже есть");
+//        }
 
         user.setName(requestDto.getName());
         user.setEmail(newEmail);
