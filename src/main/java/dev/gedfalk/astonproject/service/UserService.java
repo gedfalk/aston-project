@@ -1,8 +1,10 @@
 package dev.gedfalk.astonproject.service;
 
+import dev.gedfalk.astonproject.dto.UserEventDto;
 import dev.gedfalk.astonproject.dto.UserRequestDto;
 import dev.gedfalk.astonproject.dto.UserResponseDto;
 import dev.gedfalk.astonproject.entity.User;
+import dev.gedfalk.astonproject.kafka.UserEventProducer;
 import dev.gedfalk.astonproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserEventProducer userEventProducer;
 
     // преобразуем Entity в Dto
     private UserResponseDto convertToDto(User user) {
@@ -41,6 +44,17 @@ public class UserService {
                 .build();
 
         User savedUser = userRepository.save(user);
+
+        UserEventDto event = UserEventDto.builder()
+                .eventType(UserEventDto.EventType.USER_CREATED)
+                .email(savedUser.getEmail())
+                .userName(savedUser.getName())
+                .userId(savedUser.getId())
+                .eventTimestamp(LocalDateTime.now())
+                .build();
+
+        userEventProducer.sendUserEvent(event);
+
         return convertToDto(savedUser);
     }
 
@@ -61,7 +75,22 @@ public class UserService {
 //        if (!userRepository.existsById(id)) {
 //            throw new RuntimeException("Пользователь с таким id не найден");
 //        }
+        User user = userRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("Пользователь с таким id не найден"));
+
+        // нужно ли сохранить email, name?...
+
         userRepository.deleteById(id);
+
+        UserEventDto event = UserEventDto.builder()
+                .eventType(UserEventDto.EventType.USER_DELETED)
+                .email(user.getEmail())
+                .userName(user.getName())
+                .userId(id)
+                .eventTimestamp(LocalDateTime.now())
+                .build();
+
+        userEventProducer.sendUserEvent(event);
     }
 
     @Transactional
