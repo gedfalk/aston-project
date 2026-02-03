@@ -5,6 +5,7 @@ target/
 .kotlin
 
 ### IntelliJ IDEA ###
+.idea/vcs.xml
 .idea/dbnavigator.xml
 .idea/encodings.xml
 .idea/modules.xml
